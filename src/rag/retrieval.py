@@ -27,28 +27,6 @@ def retrieve_documents(
 ):
     """
     Retrieve relevant document chunks from a Databricks AI Search index.
-
-    Parameters
-    ----------
-    search_client:
-        Configured Databricks AI Search client.
-
-    index_name : str
-        Fully qualified Vector Search index name.
-
-    question : str
-        User question.
-
-    top_k : int
-        Maximum number of chunks to retrieve.
-
-    columns : list[str] | None
-        Columns to return from the index.
-
-    Returns
-    -------
-    list[dict]
-        Normalized retrieved documents.
     """
 
     if not question or not question.strip():
@@ -59,8 +37,11 @@ def retrieve_documents(
 
     selected_columns = columns or DEFAULT_COLUMNS
 
-    response = search_client.similarity_search(
-        index_name=index_name,
+    index = search_client.get_index(
+        index_name=index_name
+    )
+
+    response = index.similarity_search(
         query_text=question,
         columns=selected_columns,
         num_results=top_k,
@@ -95,7 +76,7 @@ def retrieve_documents(
 
 def build_rag_context(documents):
     """
-    Convert retrieved documents into a textual context for the LLM.
+    Convert retrieved documents into textual context for the LLM.
     """
 
     context_parts = []

@@ -9,8 +9,11 @@ from src.rag.retrieval import (
 
 def test_retrieve_documents():
     search_client = MagicMock()
+    index = MagicMock()
 
-    search_client.similarity_search.return_value = {
+    search_client.get_index.return_value = index
+
+    index.similarity_search.return_value = {
         "manifest": {
             "columns": [
                 {"name": "chunk_id"},
@@ -48,13 +51,15 @@ def test_retrieve_documents():
     )
 
     assert len(result) == 2
-
     assert result[0]["chunk_id"] == "chunk-001"
     assert result[0]["file_name"] == "return_policy.txt"
-
     assert result[1]["file_name"] == "returns_faq_en.txt"
 
-    search_client.similarity_search.assert_called_once()
+    search_client.get_index.assert_called_once_with(
+        index_name="catalog.genai.document_chunks_index"
+    )
+
+    index.similarity_search.assert_called_once()
 
 
 def test_retrieve_documents_empty_question():
@@ -67,8 +72,7 @@ def test_retrieve_documents_empty_question():
     )
 
     assert result == []
-
-    search_client.similarity_search.assert_not_called()
+    search_client.get_index.assert_not_called()
 
 
 def test_build_rag_context():
