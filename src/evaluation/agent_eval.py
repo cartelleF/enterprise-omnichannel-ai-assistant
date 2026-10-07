@@ -27,16 +27,36 @@ def normalize_text(text):
 
 
 def check_expected_terms(answer, expected_terms):
-    """Return True when all expected terms occur in the answer."""
+    """
+    Check expected answer content.
+
+    Each expected term may be:
+    - a string: the term must occur in the answer
+    - a list/tuple/set: at least one alternative must occur
+    """
     if not expected_terms:
         return True
 
     normalized_answer = normalize_text(answer)
 
-    return all(
-        normalize_text(term) in normalized_answer
-        for term in expected_terms
-    )
+    for expected in expected_terms:
+        if isinstance(expected, (list, tuple, set)):
+            alternatives = [
+                normalize_text(term)
+                for term in expected
+            ]
+
+            if not any(
+                alternative in normalized_answer
+                for alternative in alternatives
+            ):
+                return False
+
+        else:
+            if normalize_text(expected) not in normalized_answer:
+                return False
+
+    return True
 
 
 def evaluate_agent(
@@ -44,22 +64,7 @@ def evaluate_agent(
     evaluation_questions,
     delay_seconds=0,
 ):
-    """
-    Evaluate routing, execution and task completion.
-
-    Each evaluation case should contain:
-        question
-        expected_route
-        expected_terms
-
-    assistant_fn must accept a question and return a dictionary containing:
-        route
-        answer
-        sources
-
-    Optional:
-        error
-    """
+    """Evaluate routing, execution and task completion."""
     results = []
 
     for case in evaluation_questions:

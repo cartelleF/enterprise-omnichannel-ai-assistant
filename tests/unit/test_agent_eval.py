@@ -120,3 +120,15 @@ def test_calculate_agent_metrics():
     assert metrics["tool_selection_accuracy"] == 1.0
     assert metrics["tool_execution_success_rate"] == 1.0
     assert metrics["task_completion_rate"] == 0.5
+
+
+def test_check_expected_terms_accepts_alternatives():
+    answer = "The order ORD-10066 was delivered on June 2, 2026."
+
+    assert check_expected_terms(
+        answer,
+        [
+            "ORD-10066",
+            ["2026-06-02", "June 2, 2026"],
+        ],
+    )
