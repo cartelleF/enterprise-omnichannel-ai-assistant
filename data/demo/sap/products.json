@@ -1,0 +1,302 @@
+[
+  {
+    "product_id": "PROD-1001",
+    "product_name": "Home Energy Monitor E2 1",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 566.84,
+    "currency": "EUR",
+    "stock_quantity": 283,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1002",
+    "product_name": "Smart Thermostat T3 2",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 541.99,
+    "currency": "EUR",
+    "stock_quantity": 194,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1003",
+    "product_name": "Indoor Camera C4 3",
+    "category": "Audio",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 261.72,
+    "currency": "EUR",
+    "stock_quantity": 280,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1004",
+    "product_name": "Security Starter Kit S1 4",
+    "category": "Energy",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 191.83,
+    "currency": "EUR",
+    "stock_quantity": 402,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1005",
+    "product_name": "Connected Speaker A1 5",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 370.45,
+    "currency": "EUR",
+    "stock_quantity": 109,
+    "active": false
+  },
+  {
+    "product_id": "PROD-1006",
+    "product_name": "Wireless Door Sensor D1 6",
+    "category": "Accessories",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 95.28,
+    "currency": "EUR",
+    "stock_quantity": 263,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1007",
+    "product_name": "Smart Home Camera C2 7",
+    "category": "Security",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 548.04,
+    "currency": "EUR",
+    "stock_quantity": 115,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1008",
+    "product_name": "Wireless Door Sensor D1 8",
+    "category": "Smart Home",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 65.57,
+    "currency": "EUR",
+    "stock_quantity": 243,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1009",
+    "product_name": "Connected Speaker A1 9",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 712.32,
+    "currency": "EUR",
+    "stock_quantity": 294,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1010",
+    "product_name": "Smart Light Panel L4 10",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 337.72,
+    "currency": "EUR",
+    "stock_quantity": 75,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1011",
+    "product_name": "Smart Home Camera C2 11",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 198.5,
+    "currency": "EUR",
+    "stock_quantity": 411,
+    "active": false
+  },
+  {
+    "product_id": "PROD-1012",
+    "product_name": "Smart Home Hub X1 12",
+    "category": "Audio",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 221.87,
+    "currency": "EUR",
+    "stock_quantity": 434,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1013",
+    "product_name": "Connected Speaker A1 13",
+    "category": "Security",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 647.08,
+    "currency": "EUR",
+    "stock_quantity": 341,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1014",
+    "product_name": "Connected Speaker A1 14",
+    "category": "Audio",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 657.55,
+    "currency": "EUR",
+    "stock_quantity": 456,
+    "active": false
+  },
+  {
+    "product_id": "PROD-1015",
+    "product_name": "Smart Plug P2 15",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 720.84,
+    "currency": "EUR",
+    "stock_quantity": 380,
+    "active": false
+  },
+  {
+    "product_id": "PROD-1016",
+    "product_name": "Connected Speaker A1 16",
+    "category": "Energy",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 608.86,
+    "currency": "EUR",
+    "stock_quantity": 430,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1017",
+    "product_name": "Smart Plug P2 17",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 512.59,
+    "currency": "EUR",
+    "stock_quantity": 140,
+    "active": false
+  },
+  {
+    "product_id": "PROD-1018",
+    "product_name": "Smart Home Camera C2 18",
+    "category": "Accessories",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 250.0,
+    "currency": "EUR",
+    "stock_quantity": 139,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1019",
+    "product_name": "Home Energy Monitor E2 19",
+    "category": "Audio",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 92.03,
+    "currency": "EUR",
+    "stock_quantity": 77,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1020",
+    "product_name": "Smart Light Panel L4 20",
+    "category": "Accessories",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 147.65,
+    "currency": "EUR",
+    "stock_quantity": 109,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1021",
+    "product_name": "Smart Light Panel L4 21",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 284.77,
+    "currency": "EUR",
+    "stock_quantity": 238,
+    "active": false
+  },
+  {
+    "product_id": "PROD-1022",
+    "product_name": "Smart Home Hub X1 22",
+    "category": "Security",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 671.32,
+    "currency": "EUR",
+    "stock_quantity": 199,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1023",
+    "product_name": "Indoor Camera C4 23",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 397.26,
+    "currency": "EUR",
+    "stock_quantity": 482,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1024",
+    "product_name": "Security Starter Kit S1 24",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 687.14,
+    "currency": "EUR",
+    "stock_quantity": 488,
+    "active": false
+  },
+  {
+    "product_id": "PROD-1025",
+    "product_name": "Smart Plug P2 25",
+    "category": "Accessories",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 595.66,
+    "currency": "EUR",
+    "stock_quantity": 409,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1026",
+    "product_name": "Connected Speaker A1 26",
+    "category": "Security",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 240.15,
+    "currency": "EUR",
+    "stock_quantity": 248,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1027",
+    "product_name": "Smart Light Panel L4 27",
+    "category": "Energy",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 545.02,
+    "currency": "EUR",
+    "stock_quantity": 408,
+    "active": false
+  },
+  {
+    "product_id": "PROD-1028",
+    "product_name": "Wireless Door Sensor D1 28",
+    "category": "Lighting",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 738.04,
+    "currency": "EUR",
+    "stock_quantity": 318,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1029",
+    "product_name": "Smart Light Panel L4 29",
+    "category": "Audio",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 464.57,
+    "currency": "EUR",
+    "stock_quantity": 13,
+    "active": true
+  },
+  {
+    "product_id": "PROD-1030",
+    "product_name": "Smart Light Panel L4 30",
+    "category": "Security",
+    "description": "Connected enterprise product for smart home and customer solutions.",
+    "price": 697.47,
+    "currency": "EUR",
+    "stock_quantity": 93,
+    "active": true
+  }
+]

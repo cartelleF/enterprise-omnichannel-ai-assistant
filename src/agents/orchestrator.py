@@ -1,18 +1,26 @@
 """
 Orchestration layer for the Enterprise Omni-Channel AI Assistant.
 
-The orchestrator coordinates:
+Coordinates:
 - LLM routing
-- structured enterprise tools
-- RAG retrieval
-- grounded answer generation
+- Structured enterprise data access
+- Metadata-aware RAG retrieval
+- Grounded answer generation
 """
 
 from src.agents.router import route_question
-from src.tools.order_tool import get_order
-from src.tools.customer_tool import get_customer
-from src.rag.retrieval import retrieve_documents, build_rag_context, extract_sources
-from src.rag.generation import generate_from_rag_context, generate_from_structured_context, generate_from_order_and_rag
+from src.rag.metadata_filter import select_document_filters
+from src.rag.retrieval import (
+    retrieve_documents,
+    retrieve_documents_with_metadata,
+    build_rag_context,
+    extract_sources,
+)
+from src.rag.generation import (
+    generate_from_rag_context,
+    generate_from_structured_context,
+    generate_from_order_and_rag,
+)
 
 
 UNKNOWN_ANSWER = (
@@ -20,33 +28,97 @@ UNKNOWN_ANSWER = (
     "and capabilities."
 )
 
+SEARCH_UNAVAILABLE_ANSWER = (
+    "The document search service is currently unavailable. "
+    "Please try again later."
+)
+
+NO_DOCUMENTS_ANSWER = (
+    "I could not find sufficient information "
+    "in the available documents."
+)
+
+
+def get_relevant_documents(
+    search_client,
+    index_name,
+    question,
+    top_k,
+):
+    filters = select_document_filters(question)
+
+    return retrieve_documents(
+        search_client,
+        index_name,
+        question,
+        top_k=top_k,
+        filters=filters,
+    )
+
+
+def get_relevant_documents_with_metadata(
+    search_client,
+    index_name,
+    question,
+    top_k,
+):
+    filters = select_document_filters(question)
+
+    return retrieve_documents_with_metadata(
+        search_client,
+        index_name,
+        question,
+        top_k=top_k,
+        filters=filters,
+    )
+
+
+def retrieval_failure_response(
+    question,
+    route,
+    retrieval_result,
+):
+    """
+    Return a safe response when document retrieval fails
+    or returns no usable evidence.
+
+    Never call the generation LLM without valid RAG context.
+    """
+
+    retrieval = retrieval_result["retrieval"]
+    documents = retrieval_result["documents"]
+
+    if retrieval["status"] != "success":
+        return {
+            "question": question,
+            "route": route,
+            "answer": SEARCH_UNAVAILABLE_ANSWER,
+            "sources": [],
+            "retrieval": retrieval,
+        }
+
+    if not any(doc.get("chunk_text") for doc in documents):
+        return {
+            "question": question,
+            "route": route,
+            "answer": NO_DOCUMENTS_ANSWER,
+            "sources": [],
+            "retrieval": retrieval,
+        }
+
+    return None
+
 
 def enterprise_assistant(
     question,
-    spark,
+    data_client,
     llm_client,
     search_client,
     model_name,
     index_name,
-    order_table,
-    customer_table,
     reference_date=None,
     top_k=3,
 ):
-    """
-    Execute one end-to-end assistant request.
-
-    Returns
-    -------
-    dict
-        {
-            "question": str,
-            "route": str,
-            "answer": str,
-            "sources": list[str]
-        }
-    """
-
     routing = route_question(
         llm_client,
         model_name,
@@ -57,14 +129,27 @@ def enterprise_assistant(
     order_id = routing.get("order_id")
     customer_id = routing.get("customer_id")
 
+    # --------------------------------------------------
+    # RAG: Document-based questions
+    # --------------------------------------------------
     if route == "RAG":
-        documents = retrieve_documents(
+        retrieval_result = get_relevant_documents_with_metadata(
             search_client,
             index_name,
             question,
-            top_k=top_k,
+            top_k,
         )
 
+        failure = retrieval_failure_response(
+            question,
+            route,
+            retrieval_result,
+        )
+
+        if failure is not None:
+            return failure
+
+        documents = retrieval_result["documents"]
         context = build_rag_context(documents)
 
         answer = generate_from_rag_context(
@@ -79,8 +164,12 @@ def enterprise_assistant(
             "route": route,
             "answer": answer,
             "sources": extract_sources(documents),
+            "retrieval": retrieval_result["retrieval"],
         }
 
+    # --------------------------------------------------
+    # ORDER: Structured order data
+    # --------------------------------------------------
     if route == "ORDER":
         if not order_id:
             return {
@@ -90,11 +179,7 @@ def enterprise_assistant(
                 "sources": [],
             }
 
-        order_result = get_order(
-            spark,
-            order_table,
-            order_id,
-        )
+        order_result = data_client.get_order(order_id)
 
         if not order_result["found"]:
             return {
@@ -118,6 +203,9 @@ def enterprise_assistant(
             "sources": ["gold.order_360"],
         }
 
+    # --------------------------------------------------
+    # CUSTOMER: Structured customer data
+    # --------------------------------------------------
     if route == "CUSTOMER":
         if not customer_id:
             return {
@@ -127,17 +215,15 @@ def enterprise_assistant(
                 "sources": [],
             }
 
-        customer_result = get_customer(
-            spark,
-            customer_table,
-            customer_id,
-        )
+        customer_result = data_client.get_customer(customer_id)
 
         if not customer_result["found"]:
             return {
                 "question": question,
                 "route": route,
-                "answer": f"Customer {customer_id} was not found.",
+                "answer": (
+                    f"Customer {customer_id} was not found."
+                ),
                 "sources": [],
             }
 
@@ -155,6 +241,9 @@ def enterprise_assistant(
             "sources": ["gold.customer_360"],
         }
 
+    # --------------------------------------------------
+    # ORDER_RAG: Structured order + documents
+    # --------------------------------------------------
     if route == "ORDER_RAG":
         if not order_id:
             return {
@@ -164,11 +253,7 @@ def enterprise_assistant(
                 "sources": [],
             }
 
-        order_result = get_order(
-            spark,
-            order_table,
-            order_id,
-        )
+        order_result = data_client.get_order(order_id)
 
         if not order_result["found"]:
             return {
@@ -178,13 +263,23 @@ def enterprise_assistant(
                 "sources": [],
             }
 
-        documents = retrieve_documents(
+        retrieval_result = get_relevant_documents_with_metadata(
             search_client,
             index_name,
             question,
-            top_k=top_k,
+            top_k,
         )
 
+        failure = retrieval_failure_response(
+            question,
+            route,
+            retrieval_result,
+        )
+
+        if failure is not None:
+            return failure
+
+        documents = retrieval_result["documents"]
         rag_context = build_rag_context(documents)
 
         answer = generate_from_order_and_rag(
@@ -200,9 +295,16 @@ def enterprise_assistant(
             "question": question,
             "route": route,
             "answer": answer,
-            "sources": ["gold.order_360"] + extract_sources(documents),
+            "sources": (
+                ["gold.order_360"]
+                + extract_sources(documents)
+            ),
+            "retrieval": retrieval_result["retrieval"],
         }
 
+    # --------------------------------------------------
+    # UNKNOWN: Unsupported questions
+    # --------------------------------------------------
     return {
         "question": question,
         "route": "UNKNOWN",

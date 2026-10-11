@@ -1,11 +1,12 @@
 """
 Retrieval layer for the Enterprise Omni-Channel AI Assistant.
 
-This module retrieves relevant enterprise document chunks from
-a Databricks AI Search index.
-
-The AI Search client is injected so that the retrieval logic can
-be unit-tested without connecting to Databricks.
+Supports:
+- Databricks AI Search
+- Hybrid Search
+- Optional metadata filtering
+- RAG context construction
+- Source extraction
 """
 
 
@@ -24,9 +25,19 @@ def retrieve_documents(
     question,
     top_k=3,
     columns=None,
+    filters=None,
+    query_type="HYBRID",
 ):
     """
-    Retrieve relevant document chunks from a Databricks AI Search index.
+    Retrieve relevant document chunks from Databricks AI Search.
+
+    Parameters
+    ----------
+    filters:
+        Optional metadata filters accepted by Databricks AI Search.
+
+    query_type:
+        Search strategy, defaulting to HYBRID.
     """
 
     if not question or not question.strip():
@@ -41,11 +52,17 @@ def retrieve_documents(
         index_name=index_name
     )
 
-    response = index.similarity_search(
-        query_text=question,
-        columns=selected_columns,
-        num_results=top_k,
-    )
+    search_kwargs = {
+        "query_text": question,
+        "columns": selected_columns,
+        "num_results": top_k,
+        "query_type": query_type,
+    }
+
+    if filters is not None:
+        search_kwargs["filters"] = filters
+
+    response = index.similarity_search(**search_kwargs)
 
     result = response.get("result", {})
     data_array = result.get("data_array", [])
@@ -110,3 +127,79 @@ def extract_sources(documents):
             sources.append(file_name)
 
     return sources
+
+
+def retrieve_documents_with_metadata(
+    search_client,
+    index_name,
+    question,
+    top_k=3,
+    columns=None,
+    filters=None,
+    query_type="HYBRID",
+):
+    """
+    Retrieve documents and record observable retrieval status.
+
+    Keeps the existing retrieve_documents() interface unchanged.
+    """
+
+    if not isinstance(question, str) or not question.strip():
+        return {
+            "documents": [],
+            "retrieval": {
+                "status": "skipped",
+                "retrieved_count": 0,
+                "accepted_count": 0,
+                "error": None,
+                "reason": "empty_question",
+            },
+        }
+
+    if top_k <= 0:
+        return {
+            "documents": [],
+            "retrieval": {
+                "status": "skipped",
+                "retrieved_count": 0,
+                "accepted_count": 0,
+                "error": None,
+                "reason": "invalid_top_k",
+            },
+        }
+
+    try:
+        documents = retrieve_documents(
+            search_client=search_client,
+            index_name=index_name,
+            question=question,
+            top_k=top_k,
+            columns=columns,
+            filters=filters,
+            query_type=query_type,
+        )
+    except Exception as exc:
+        return {
+            "documents": [],
+            "retrieval": {
+                "status": "error",
+                "retrieved_count": None,
+                "accepted_count": None,
+                "error": type(exc).__name__,
+                "reason": "search_failed",
+            },
+        }
+
+    return {
+        "documents": documents,
+        "retrieval": {
+            "status": "success",
+            "retrieved_count": len(documents),
+            "accepted_count": sum(
+                bool(document.get("chunk_text"))
+                for document in documents
+            ),
+            "error": None,
+            "reason": None,
+        },
+    }

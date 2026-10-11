@@ -1,0 +1,9 @@
+Lieferungs-FAQ
+
+Die Standardlieferung dauert normalerweise zwischen 2 und 4 Werktagen.
+
+Kunden können den Status ihrer Bestellung anhand ihrer Bestellnummer
+überprüfen.
+
+Wenn eine Bestellung als DELAYED markiert ist, sollte der Kundenservice
+die aktuellen Logistikdaten prüfen.

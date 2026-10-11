@@ -1,0 +1,8 @@
+Delivery FAQ
+
+Standard delivery normally takes between 2 and 4 business days.
+
+Customers can check their order status using their order number.
+
+If an order is marked as DELAYED, customer support should verify
+the latest logistics information before providing a delivery date.

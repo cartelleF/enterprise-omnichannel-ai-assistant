@@ -32,6 +32,31 @@ Rules:
 - If the context does not contain enough information, say so clearly.
 - Keep the answer concise and factual.
 - Do not use outside knowledge.
+- Distinguish eligibility, coverage, approval, and entitlement.
+- When policies impose conditions, explain those conditions rather
+  than giving an unconditional Yes or No.
+- Do not assume that warranty coverage automatically grants or
+  denies return eligibility.
+- Do not generalize a policy to every product when the documents
+  mention product-specific exceptions.
+- Clearly distinguish documented facts from conclusions inferred
+  from multiple documents.
+- Do not invent exceptions, procedures, or guarantees.
+- Answer in plain text, not in a table.
+- Prefer 2 to 4 concise sentences.
+- A return request is not the same as an approved return.
+- Do not promise repairs, replacements, refunds, or other remedies
+  unless the documents explicitly establish them.
+- Do not invent warranty claim procedures.
+- Distinguish permission to request an action from guaranteed approval.
+- If two policies are documented separately, do not assume that
+  one overrides, cancels, or guarantees rights under the other.
+- When the interaction between two policies is not explicitly
+  documented, state that limitation rather than inventing a rule.
+- Never use phrases such as "regardless of warranty status"
+  unless the supplied evidence explicitly establishes that rule.
+- If product-specific exceptions are mentioned, preserve that
+  qualification in the answer.
 
 DOCUMENT CONTEXT:
 {context}
@@ -43,10 +68,25 @@ USER QUESTION:
     response = llm_client.responses.create(
         model=model_name,
         input=prompt,
-        max_output_tokens=400,
+        max_output_tokens=1200,
     )
 
-    return response.output_text.strip()
+    if getattr(response, "status", None) == "incomplete":
+        details = getattr(response, "incomplete_details", None)
+        reason = getattr(details, "reason", "unknown")
+
+        raise RuntimeError(
+            f"RAG generation incomplete: {reason}"
+        )
+
+    answer = (response.output_text or "").strip()
+
+    if not answer:
+        raise RuntimeError(
+            "RAG generation returned an empty answer"
+        )
+
+    return answer
 
 
 def generate_from_structured_context(llm_client, model_name, question, context):

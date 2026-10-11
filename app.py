@@ -1,0 +1,171 @@
+"""Public portfolio demo for the Enterprise Omni-Channel AI Assistant."""
+
+import streamlit as st
+
+from src.api.demo_bootstrap import prepare_demo_data
+from src.api.local_demo_service import LocalDemoService
+
+
+st.set_page_config(
+    page_title="Enterprise AI Assistant | Portfolio Demo",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+
+@st.cache_resource
+def get_service():
+    prepare_demo_data()
+    return LocalDemoService(
+        multilingual_retrieval=True,
+        multilingual_formatting=True,
+    )
+
+
+EXAMPLES = {
+    "English": [
+        "What is the standard return policy?",
+        "Can I get a refund after 45 days?",
+        "What is the warranty for product PROD-1006?",
+    ],
+    "Deutsch": [
+        "Wie lange dauert die Standardlieferung?",
+        "Wie lange gilt die Garantie für PROD-1003?",
+    ],
+    "Français": [
+        "Quelle est la garantie du produit PROD-1006 ?",
+        "Combien de temps prend la livraison standard ?",
+    ],
+}
+
+
+def render_response(result):
+    answer = result.get("answer") or "No answer available."
+    route = result.get("route") or "UNKNOWN"
+    sources = result.get("sources") or []
+
+    st.markdown(answer)
+
+    st.caption(f"Routing: {route}")
+
+    if sources:
+        with st.expander("📚 Retrieved sources"):
+            for source in sources:
+                st.markdown(f"- `{source}`")
+
+
+st.title("🤖 Enterprise Omni-Channel AI Assistant")
+
+st.markdown(
+    "**Multilingual RAG · Intelligent Routing · "
+    "SAP/CRM Simulation · Enterprise AI**"
+)
+
+st.info(
+    "Portfolio demonstration using synthetic enterprise data. "
+    "No real customer information is used."
+)
+
+with st.sidebar:
+    st.header("About this project")
+
+    st.markdown(
+        """
+        **Enterprise AI Assistant**
+
+        A demonstration of enterprise AI engineering,
+        multilingual retrieval and business-system integration.
+
+        **Capabilities**
+        - Multilingual support: English, German, French
+        - Retrieval-Augmented Generation (RAG)
+        - Intelligent request routing
+        - Synthetic SAP/CRM business scenarios
+        - Source attribution
+
+        **Technology**
+        - Python
+        - SQLite / BM25
+        - RAG
+        - Azure Databricks architecture
+        """
+    )
+
+    st.divider()
+
+    st.caption(
+        "This is an offline-first demonstration. "
+        "The production-oriented architecture is documented "
+        "separately."
+    )
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+if "pending_question" not in st.session_state:
+    st.session_state.pending_question = None
+
+if not st.session_state.messages:
+    st.subheader("Try an example")
+
+    language = st.selectbox(
+        "Choose a language",
+        list(EXAMPLES),
+    )
+
+    for index, example in enumerate(EXAMPLES[language]):
+        if st.button(
+            example,
+            key=f"example_{language}_{index}",
+            use_container_width=True,
+        ):
+            st.session_state.pending_question = example
+            st.rerun()
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        if message["role"] == "assistant":
+            render_response(message["result"])
+        else:
+            st.markdown(message["content"])
+
+question = st.chat_input(
+    "Ask about orders, returns, delivery or warranties..."
+)
+
+if st.session_state.pending_question:
+    question = st.session_state.pending_question
+    st.session_state.pending_question = None
+
+if question:
+    question = question.strip()
+
+    if question:
+        if len(question) > 500:
+            st.warning("Please limit your question to 500 characters.")
+            st.stop()
+
+        st.session_state.messages.append(
+            {"role": "user", "content": question}
+        )
+
+        with st.chat_message("user"):
+            st.markdown(question)
+
+        with st.chat_message("assistant"):
+            with st.spinner("Searching enterprise knowledge..."):
+                try:
+                    result = get_service().ask(question)
+                except Exception:
+                    st.error(
+                        "The demo could not process this request. "
+                        "Please try another question."
+                    )
+                    st.stop()
+
+            render_response(result)
+
+        st.session_state.messages.append(
+            {"role": "assistant", "result": result}
+        )
