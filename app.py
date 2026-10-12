@@ -15,12 +15,20 @@ st.set_page_config(
 
 
 @st.cache_resource
-def get_service():
+def initialize_demo_data():
     prepare_demo_data()
-    return LocalDemoService(
-        multilingual_retrieval=True,
-        multilingual_formatting=True,
-    )
+    return True
+
+
+def get_service():
+    if "local_demo_service" not in st.session_state:
+        initialize_demo_data()
+        st.session_state.local_demo_service = LocalDemoService(
+            multilingual_retrieval=True,
+            multilingual_formatting=True,
+        )
+
+    return st.session_state.local_demo_service
 
 
 EXAMPLES = {
@@ -41,18 +49,56 @@ EXAMPLES = {
 
 
 def render_response(result):
-    answer = result.get("answer") or "No answer available."
+    import re
+    from src.api.portfolio_trace import render_execution_trace
+
+    answer = str(result.get("answer") or "No answer available.")
     route = result.get("route") or "UNKNOWN"
-    sources = result.get("sources") or []
 
-    st.markdown(answer)
+    # Format successful order lookups as a compact summary.
+    # Preserve the backend answer as the source of truth.
+    order_pattern = re.compile(
+        r"\AOrder:\s*(ORD-\d+)\s*"
+        r"Status:\s*(.*?)\s+"
+        r"Order date:\s*(.*?)\s+"
+        r"Delivery date:\s*(.*?)\s+"
+        r"Total:\s*(.*?)\Z",
+        re.DOTALL,
+    )
 
-    st.caption(f"Routing: {route}")
+    match = (
+        order_pattern.fullmatch(answer.strip())
+        if route == "ORDER"
+        else None
+    )
 
-    if sources:
-        with st.expander("📚 Retrieved sources"):
-            for source in sources:
-                st.markdown(f"- `{source}`")
+    if match:
+        order_id, status, order_date, delivery_date, total = (
+            match.groups()
+        )
+
+        st.markdown(f"#### 📦 Order {order_id}")
+
+        st.markdown(f"**Status:** `{status}`")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.caption("Order date")
+            st.write(order_date)
+
+        with col2:
+            st.caption("Recorded delivery date")
+            st.write(delivery_date)
+
+        st.metric("Total amount", total)
+
+    else:
+        # Keep RAG, ORDER_RAG, customer and fallback answers intact.
+        st.markdown(answer)
+
+    # Routing and reported sources are already shown here.
+    render_execution_trace(result)
 
 
 st.title("🤖 Enterprise Omni-Channel AI Assistant")
@@ -191,43 +237,48 @@ with tab_engineering:
     render_evaluation_dashboard()
     st.divider()
 
-    st.header("Engineering & Evaluation")
+    with st.expander(
+        "Engineering Methodology & Implementation",
+        expanded=False,
+    ):
 
-    st.subheader("Implemented demo capabilities")
-    st.markdown(
-        """
-- Multilingual question handling: English, German and French
-- Document retrieval and source attribution
-- Intelligent request routing
-- Synthetic enterprise data and in-memory SQLite
-- Offline-first execution without a paid LLM API
-        """
-    )
+        st.header("Engineering & Evaluation")
 
-    st.subheader("Engineering practices")
-    st.markdown(
-        """
-- Modular Python components
-- Automated tests
-- Retrieval and answer-quality evaluation
-- Separation between demonstration and production architecture
-- Git-based version control and reproducible deployment
-        """
-    )
+        st.subheader("Implemented demo capabilities")
+        st.markdown(
+            """
+    - Multilingual question handling: English, German and French
+    - Document retrieval and source attribution
+    - Intelligent request routing
+    - Synthetic enterprise data and in-memory SQLite
+    - Offline-first execution without a paid LLM API
+            """
+        )
 
-    st.subheader("Evaluation dimensions")
-    st.markdown(
-        """
-| Layer | Example metrics |
-|---|---|
-| Retrieval | Precision, Recall, MRR |
-| Answer quality | Factual correctness, groundedness |
-| Routing | Intent and route accuracy |
-| End-to-end | Task completion, answer correctness |
-        """
-    )
+        st.subheader("Engineering practices")
+        st.markdown(
+            """
+    - Modular Python components
+    - Automated tests
+    - Retrieval and answer-quality evaluation
+    - Separation between demonstration and production architecture
+    - Git-based version control and reproducible deployment
+            """
+        )
 
-    st.caption(
-        "Evaluation dimensions describe the project's methodology. "
-        "They are not claims of independently verified production performance."
-    )
+        st.subheader("Evaluation dimensions")
+        st.markdown(
+            """
+    | Layer | Example metrics |
+    |---|---|
+    | Retrieval | Precision, Recall, MRR |
+    | Answer quality | Factual correctness, groundedness |
+    | Routing | Intent and route accuracy |
+    | End-to-end | Task completion, answer correctness |
+            """
+        )
+
+        st.caption(
+            "Evaluation dimensions describe the project's methodology. "
+            "They are not claims of independently verified production performance."
+        )

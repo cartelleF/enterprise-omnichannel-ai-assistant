@@ -18,11 +18,22 @@ from src.rag.multilingual_query_expansion import expand_multilingual_query
 
 
 class LocalDemoService:
-    def __init__(self, multilingual_retrieval=False, multilingual_formatting=False):
+    def __init__(self, multilingual_retrieval=False, multilingual_formatting=False, reference_date=None):
+        self._fixed_reference_date = reference_date
         self.data_client = SQLiteDataClient()
         self.search_client = LocalSearchClient()
         self.multilingual_retrieval = multilingual_retrieval
         self.multilingual_formatting = multilingual_formatting
+
+
+    @property
+    def reference_date(self):
+        from datetime import date
+        return (
+            self._fixed_reference_date
+            or date.today().isoformat()
+        )
+
 
     def _retrieval_question(self, question):
         if self.multilingual_retrieval:
@@ -84,7 +95,7 @@ class LocalDemoService:
 
             assessment = assess_return_window(
                 delivery_date=order.get("delivery_date"),
-                reference_date="2026-09-30",
+                reference_date=self.reference_date,
                 return_window_days=30,
             )
 

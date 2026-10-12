@@ -7,6 +7,7 @@ database and exposes the StructuredDataClient interface.
 
 import json
 import sqlite3
+import threading
 from pathlib import Path
 
 
@@ -21,16 +22,34 @@ DEFAULT_DATA_DIR = (
 class SQLiteDataClient:
     def __init__(self, data_dir=None):
         self.data_dir = Path(data_dir or DEFAULT_DATA_DIR)
-        self.connection = sqlite3.connect(":memory:")
-        self.connection.row_factory = sqlite3.Row
+        self._thread_local = threading.local()
+        self._connections = []
+        self._connections_lock = threading.Lock()
 
-        try:
-            self._initialize()
-        except Exception:
-            self.connection.close()
-            raise
+    @property
+    def connection(self):
+        connection = getattr(
+            self._thread_local, "connection", None
+        )
 
-    def _initialize(self):
+        if connection is None:
+            connection = sqlite3.connect(":memory:")
+            connection.row_factory = sqlite3.Row
+
+            try:
+                self._initialize_connection(connection)
+            except Exception:
+                connection.close()
+                raise
+
+            self._thread_local.connection = connection
+
+            with self._connections_lock:
+                self._connections.append(connection)
+
+        return connection
+
+    def _initialize_connection(self, connection):
         datasets = (
             "customers",
             "orders",
@@ -71,7 +90,7 @@ class SQLiteDataClient:
                 for column in columns
             )
 
-            self.connection.execute(
+            connection.execute(
                 f'CREATE TABLE "{name}" ({quoted_columns})'
             )
 
@@ -84,7 +103,7 @@ class SQLiteDataClient:
                 "?" for _ in columns
             )
 
-            self.connection.executemany(
+            connection.executemany(
                 f'INSERT INTO "{name}" ({column_names}) '
                 f'VALUES ({placeholders})',
                 [
@@ -97,22 +116,22 @@ class SQLiteDataClient:
                 ],
             )
 
-        self.connection.execute(
+        connection.execute(
             "CREATE INDEX idx_orders_id "
             "ON orders(order_id)"
         )
 
-        self.connection.execute(
+        connection.execute(
             "CREATE INDEX idx_customers_id "
             "ON customers(customer_id)"
         )
 
-        self.connection.execute(
+        connection.execute(
             "CREATE INDEX idx_items_order "
             "ON order_items(order_id)"
         )
 
-        self.connection.commit()
+        connection.commit()
 
     def get_order(self, order_id: str) -> dict:
         order = self.connection.execute(
@@ -169,4 +188,18 @@ class SQLiteDataClient:
         }
 
     def close(self):
-        self.connection.close()
+        # Connections are owned by their creating threads.
+        # Do not close a connection from another thread.
+        connection = getattr(
+            self._thread_local, "connection", None
+        )
+
+        if connection is not None:
+            connection.close()
+            self._thread_local.connection = None
+
+            with self._connections_lock:
+                self._connections = [
+                    item for item in self._connections
+                    if item is not connection
+                ]
