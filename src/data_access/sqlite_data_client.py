@@ -19,6 +19,46 @@ DEFAULT_DATA_DIR = (
 )
 
 
+
+from functools import lru_cache
+
+
+@lru_cache(maxsize=32)
+def _load_cached_records(path_string, mtime_ns, file_size):
+    """Cache decoded synthetic data by file version.
+
+    Return immutable tuples so callers cannot mutate cached records.
+    """
+    path = Path(path_string)
+    records = json.loads(path.read_text(encoding="utf-8"))
+
+    if not isinstance(records, list):
+        raise ValueError(f"Expected a list in {path}")
+
+    if not records:
+        raise ValueError(f"Dataset is empty: {path}")
+
+    if not all(isinstance(record, dict) for record in records):
+        raise ValueError(f"Invalid records in {path}")
+
+    return tuple(
+        tuple(record.items())
+        for record in records
+    )
+
+
+def _read_dataset(path):
+    """Return independent records for each SQLite initialization."""
+    stat = path.stat()
+
+    cached = _load_cached_records(
+        str(path.resolve()),
+        stat.st_mtime_ns,
+        stat.st_size,
+    )
+
+    return [dict(items) for items in cached]
+
 class SQLiteDataClient:
     def __init__(self, data_dir=None):
         self.data_dir = Path(data_dir or DEFAULT_DATA_DIR)
@@ -60,9 +100,7 @@ class SQLiteDataClient:
         for name in datasets:
             path = self.data_dir / f"{name}.json"
 
-            records = json.loads(
-                path.read_text(encoding="utf-8")
-            )
+            records = _read_dataset(path)
 
             if not isinstance(records, list):
                 raise ValueError(

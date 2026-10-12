@@ -100,6 +100,9 @@ def render_response(result):
     # Routing and reported sources are already shown here.
     render_execution_trace(result)
 
+    from src.api.portfolio_performance_ui import render_performance_metrics
+    render_performance_metrics(result)
+
 
 st.title("🤖 Enterprise Omni-Channel AI Assistant")
 
