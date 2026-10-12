@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import streamlit as st
+import altair as alt
 
 
 def pct(value, digits=1):
@@ -54,10 +55,16 @@ def render_evaluation_dashboard():
     st.markdown("#### Evolution from V1 to V3")
 
     names = {
-        "V1_baseline": "V1 Baseline",
-        "V2_multilingual_retrieval": "V2 Multilingual Retrieval",
-        "V3_multilingual_assistant": "V3 Multilingual Assistant",
+        "V1_baseline": "V1",
+        "V2_multilingual_retrieval": "V2",
+        "V3_multilingual_assistant": "V3",
     }
+
+    st.caption(
+        "V1: Baseline | "
+        "V2: Multilingual Retrieval | "
+        "V3: Multilingual Assistant"
+    )
 
     metric_keys = {
         "Fact coverage": "fact_coverage",
@@ -79,15 +86,69 @@ def render_evaluation_dashboard():
             for display, key in metric_keys.items()
         }
 
-    st.line_chart(
-        {
-            metric: {
-                version: values.get(metric)
-                for version, values in rows.items()
-            }
-            for metric in metric_keys
-        }
+    st.markdown(
+        "**Comparison of generation quality across versions**"
     )
+
+    chart_records = []
+
+    for version_name, label in names.items():
+        version = versions.get(version_name, {})
+
+        for metric_label, metric_key in metric_keys.items():
+            value = version.get(metric_key)
+
+            if value is not None:
+                chart_records.append({
+                    "Version": label,
+                    "Metric": metric_label,
+                    "Score": round(value * 100, 2),
+                })
+
+    chart = (
+        alt.Chart(alt.Data(values=chart_records))
+        .mark_bar(cornerRadiusTopLeft=2, cornerRadiusTopRight=2)
+        .encode(
+            x=alt.X(
+                "Version:N",
+                sort=["V1", "V2", "V3"],
+                title="Assistant Version",
+                axis=alt.Axis(labelAngle=0),
+            ),
+            xOffset=alt.XOffset(
+                "Metric:N",
+                sort=list(metric_keys),
+            ),
+            y=alt.Y(
+                "Score:Q",
+                title="Score (%)",
+                scale=alt.Scale(domain=[0, 100]),
+            ),
+            color=alt.Color(
+                "Metric:N",
+                title="Evaluation Metric",
+                sort=list(metric_keys),
+            ),
+            tooltip=[
+                alt.Tooltip(
+                    "Version:N",
+                    title="Assistant Version",
+                ),
+                alt.Tooltip(
+                    "Metric:N",
+                    title="Evaluation Metric",
+                ),
+                alt.Tooltip(
+                    "Score:Q",
+                    title="Score (%)",
+                    format=".1f",
+                ),
+            ],
+        )
+        .properties(height=380)
+    )
+
+    st.altair_chart(chart, use_container_width=True)
 
     st.caption(
         "Percentage scores across the same 10 synthetic "
