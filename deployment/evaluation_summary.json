@@ -1,0 +1,134 @@
+{
+  "benchmark_mode": "offline_deterministic",
+  "generation_versions": {
+    "V1_baseline": {
+      "cases": 10,
+      "routing_accuracy": 1.0,
+      "fact_coverage": 0.5555555555555556,
+      "source_coverage": 0.7777777777777778,
+      "intent_satisfaction": 0.4,
+      "required_information_coverage": 0.6
+    },
+    "V2_multilingual_retrieval": {
+      "cases": 10,
+      "routing_accuracy": 1.0,
+      "fact_coverage": 0.6296296296296297,
+      "source_coverage": 0.9629629629629629,
+      "intent_satisfaction": 0.4,
+      "required_information_coverage": 0.6
+    },
+    "V3_multilingual_assistant": {
+      "cases": 10,
+      "routing_accuracy": 1.0,
+      "fact_coverage": 1.0,
+      "source_coverage": 0.9629629629629629,
+      "intent_satisfaction": 1.0,
+      "required_information_coverage": 1.0
+    }
+  },
+  "rag_summary": {
+    "LOCAL_BM25": {
+      "evaluated_questions": 5,
+      "precision_at_k": 0.5333333333333333,
+      "retrieved_precision_at_k": 0.5333333333333333,
+      "recall_at_k": 1.0,
+      "mrr": 1.0
+    },
+    "LOCAL_BM25_FILTERED": {
+      "evaluated_questions": 5,
+      "precision_at_k": 0.5333333333333333,
+      "retrieved_precision_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0
+    }
+  },
+  "multilingual_summary": {
+    "LOCAL_BM25": {
+      "de": {
+        "total": 2,
+        "metrics": {
+          "precision_at_k": 0.3333333333333333,
+          "retrieved_precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 0.75
+        }
+      },
+      "en": {
+        "total": 3,
+        "metrics": {
+          "precision_at_k": 0.6666666666666666,
+          "retrieved_precision_at_k": 0.6666666666666666,
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0
+        }
+      },
+      "fr": {
+        "total": 3,
+        "metrics": {
+          "precision_at_k": 0.3333333333333333,
+          "retrieved_precision_at_k": 0.4444444444444444,
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 0.6666666666666666
+        }
+      }
+    },
+    "LOCAL_BM25_FILTERED": {
+      "de": {
+        "total": 2,
+        "metrics": {
+          "precision_at_k": 0.3333333333333333,
+          "retrieved_precision_at_k": 1.0,
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 1.0
+        }
+      },
+      "en": {
+        "total": 3,
+        "metrics": {
+          "precision_at_k": 0.6666666666666666,
+          "retrieved_precision_at_k": 0.8333333333333333,
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0
+        }
+      },
+      "fr": {
+        "total": 3,
+        "metrics": {
+          "precision_at_k": 0.3333333333333333,
+          "retrieved_precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 0.6666666666666666
+        }
+      }
+    },
+    "LOCAL_BM25_MULTILINGUAL_FILTERED": {
+      "de": {
+        "total": 2,
+        "metrics": {
+          "precision_at_k": 0.6666666666666666,
+          "retrieved_precision_at_k": 1.0,
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0
+        }
+      },
+      "en": {
+        "total": 3,
+        "metrics": {
+          "precision_at_k": 0.6666666666666666,
+          "retrieved_precision_at_k": 0.8333333333333333,
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0
+        }
+      },
+      "fr": {
+        "total": 3,
+        "metrics": {
+          "precision_at_k": 0.6666666666666666,
+          "retrieved_precision_at_k": 1.0,
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0
+        }
+      }
+    }
+  }
+}

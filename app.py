@@ -187,6 +187,10 @@ with tab_architecture:
     render_architecture()
 
 with tab_engineering:
+    from src.api.portfolio_evaluation import render_evaluation_dashboard
+    render_evaluation_dashboard()
+    st.divider()
+
     st.header("Engineering & Evaluation")
 
     st.subheader("Implemented demo capabilities")
