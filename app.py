@@ -100,72 +100,184 @@ with st.sidebar:
         "separately."
     )
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
 
-if "pending_question" not in st.session_state:
-    st.session_state.pending_question = None
-
-if not st.session_state.messages:
-    st.subheader("Try an example")
-
-    language = st.selectbox(
-        "Choose a language",
-        list(EXAMPLES),
-    )
-
-    for index, example in enumerate(EXAMPLES[language]):
-        if st.button(
-            example,
-            key=f"example_{language}_{index}",
-            use_container_width=True,
-        ):
-            st.session_state.pending_question = example
-            st.rerun()
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        if message["role"] == "assistant":
-            render_response(message["result"])
-        else:
-            st.markdown(message["content"])
-
-question = st.chat_input(
-    "Ask about orders, returns, delivery or warranties..."
+# PORTFOLIO_V4
+tab_assistant, tab_architecture, tab_engineering = st.tabs(
+    [
+        "💬 Live Assistant",
+        "🏗️ Architecture",
+        "🧪 Engineering & Evaluation",
+    ]
 )
 
-if st.session_state.pending_question:
-    question = st.session_state.pending_question
-    st.session_state.pending_question = None
+with tab_assistant:
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-if question:
-    question = question.strip()
+    if "pending_question" not in st.session_state:
+        st.session_state.pending_question = None
+
+    if not st.session_state.messages:
+        st.subheader("Try an example")
+
+        language = st.selectbox(
+            "Choose a language",
+            list(EXAMPLES),
+        )
+
+        for index, example in enumerate(EXAMPLES[language]):
+            if st.button(
+                example,
+                key=f"example_{language}_{index}",
+                use_container_width=True,
+            ):
+                st.session_state.pending_question = example
+                st.rerun()
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            if message["role"] == "assistant":
+                render_response(message["result"])
+            else:
+                st.markdown(message["content"])
+
+    question = st.chat_input(
+        "Ask about orders, returns, delivery or warranties..."
+    )
+
+    if st.session_state.pending_question:
+        question = st.session_state.pending_question
+        st.session_state.pending_question = None
 
     if question:
-        if len(question) > 500:
-            st.warning("Please limit your question to 500 characters.")
-            st.stop()
+        question = question.strip()
 
-        st.session_state.messages.append(
-            {"role": "user", "content": question}
-        )
+        if question:
+            if len(question) > 500:
+                st.warning("Please limit your question to 500 characters.")
+                st.stop()
 
-        with st.chat_message("user"):
-            st.markdown(question)
+            st.session_state.messages.append(
+                {"role": "user", "content": question}
+            )
 
-        with st.chat_message("assistant"):
-            with st.spinner("Searching enterprise knowledge..."):
-                try:
-                    result = get_service().ask(question)
-                except Exception:
-                    st.error(
-                        "The demo could not process this request. "
-                        "Please try another question."
-                    )
-                    st.stop()
+            with st.chat_message("user"):
+                st.markdown(question)
 
-            render_response(result)
+            with st.chat_message("assistant"):
+                with st.spinner("Searching enterprise knowledge..."):
+                    try:
+                        result = get_service().ask(question)
+                    except Exception:
+                        st.error(
+                            "The demo could not process this request. "
+                            "Please try another question."
+                        )
+                        st.stop()
 
-        st.session_state.messages.append(
-            {"role": "assistant", "result": result}
-        )
+                render_response(result)
+
+            st.session_state.messages.append(
+                {"role": "assistant", "result": result}
+            )
+
+
+with tab_architecture:
+    st.header("Enterprise AI Architecture")
+    st.caption(
+        "Public demo implementation and production-oriented "
+        "Azure/Databricks architecture are shown separately."
+    )
+
+    st.subheader("Live portfolio demonstration")
+    st.code(
+        """User / Streamlit
+        |
+        v
+LocalDemoService
+        |
+        +--> Intelligent Routing
+        |       |
+        |       +--> Document RAG (BM25)
+        |       +--> Synthetic SAP/CRM scenarios
+        |
+        +--> Grounded Answer + Sources
+
+Synthetic JSON -> In-memory SQLite
+Documents -> Local Retrieval""",
+        language="text",
+    )
+
+    st.info(
+        "This public application uses synthetic datasets and "
+        "local retrieval. It does not require live SAP, CRM, "
+        "Azure Databricks or paid LLM services."
+    )
+
+    st.subheader("Production-oriented architecture")
+    st.code(
+        """SAP / CRM / Documents / APIs
+             |
+             v
+      Azure Data Lake Gen2
+             |
+             v
+      Azure Databricks
+      Bronze -> Silver -> Gold
+             |
+             v
+   RAG / Agent Orchestration
+             |
+             v
+    APIs / Enterprise Apps
+
+Security | CI/CD | Evaluation | Monitoring""",
+        language="text",
+    )
+
+    st.caption(
+        "Architecture blueprint: not all production integrations "
+        "are active in this public demonstration."
+    )
+
+with tab_engineering:
+    st.header("Engineering & Evaluation")
+
+    st.subheader("Implemented demo capabilities")
+    st.markdown(
+        """
+- Multilingual question handling: English, German and French
+- Document retrieval and source attribution
+- Intelligent request routing
+- Synthetic enterprise data and in-memory SQLite
+- Offline-first execution without a paid LLM API
+        """
+    )
+
+    st.subheader("Engineering practices")
+    st.markdown(
+        """
+- Modular Python components
+- Automated tests
+- Retrieval and answer-quality evaluation
+- Separation between demonstration and production architecture
+- Git-based version control and reproducible deployment
+        """
+    )
+
+    st.subheader("Evaluation dimensions")
+    st.markdown(
+        """
+| Layer | Example metrics |
+|---|---|
+| Retrieval | Precision, Recall, MRR |
+| Answer quality | Factual correctness, groundedness |
+| Routing | Intent and route accuracy |
+| End-to-end | Task completion, answer correctness |
+        """
+    )
+
+    st.caption(
+        "Evaluation dimensions describe the project's methodology. "
+        "They are not claims of independently verified production performance."
+    )
