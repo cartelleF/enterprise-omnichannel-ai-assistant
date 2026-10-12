@@ -183,62 +183,8 @@ with tab_assistant:
 
 
 with tab_architecture:
-    st.header("Enterprise AI Architecture")
-    st.caption(
-        "Public demo implementation and production-oriented "
-        "Azure/Databricks architecture are shown separately."
-    )
-
-    st.subheader("Live portfolio demonstration")
-    st.code(
-        """User / Streamlit
-        |
-        v
-LocalDemoService
-        |
-        +--> Intelligent Routing
-        |       |
-        |       +--> Document RAG (BM25)
-        |       +--> Synthetic SAP/CRM scenarios
-        |
-        +--> Grounded Answer + Sources
-
-Synthetic JSON -> In-memory SQLite
-Documents -> Local Retrieval""",
-        language="text",
-    )
-
-    st.info(
-        "This public application uses synthetic datasets and "
-        "local retrieval. It does not require live SAP, CRM, "
-        "Azure Databricks or paid LLM services."
-    )
-
-    st.subheader("Production-oriented architecture")
-    st.code(
-        """SAP / CRM / Documents / APIs
-             |
-             v
-      Azure Data Lake Gen2
-             |
-             v
-      Azure Databricks
-      Bronze -> Silver -> Gold
-             |
-             v
-   RAG / Agent Orchestration
-             |
-             v
-    APIs / Enterprise Apps
-
-Security | CI/CD | Evaluation | Monitoring""",
-        language="text",
-    )
-
-    st.caption(
-        "Architecture blueprint: not all production integrations "
-        "are active in this public demonstration."
-    )
+    from src.api.portfolio_architecture import render_architecture
+    render_architecture()
 
 with tab_engineering:
     st.header("Engineering & Evaluation")
