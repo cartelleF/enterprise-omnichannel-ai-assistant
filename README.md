@@ -44,9 +44,26 @@ flowchart TB
 
     subgraph A["4 · Assistant and application"]
       UI["Streamlit / React / API clients"]
-      ROUTE["Intent routing and orchestration"]
-      RESP["Grounded answer + source references"]
+      ROUTE{"Intent router"}
+      TOOL["Structured data tools"]
+      RAG["RAG retrieval"]
+      MODE{"Response generation"}
+      DET["Deterministic · No LLM"]
+      MINI["GPT-4.1 mini · OpenAI API"]
+      OSS["GPT-OSS-20B · Azure development"]
+      RESP["Answer + source references"]
+
       UI --> ROUTE
+      ROUTE -->|"Business data"| TOOL
+      ROUTE -->|"Documents"| RAG
+      TOOL --> MODE
+      RAG --> MODE
+      MODE -->|"Local"| DET
+      MODE -->|"Local AI"| MINI
+      MODE -->|"Azure development"| OSS
+      DET --> RESP
+      MINI --> RESP
+      OSS --> RESP
     end
 
     SAP --> LAKE
@@ -55,9 +72,10 @@ flowchart TB
     EXT --> LAKE
     GO --> SQL
     GO --> PREP
-    SQL --> ROUTE
-    IDX --> ROUTE
-    ROUTE --> RESP
+    TOOL --> SQL
+    SQL --> MODE
+    RAG --> IDX
+    IDX --> MODE
 ```
 
 **Reading this diagram:** It illustrates the enterprise-oriented data flow and the separation of structured data from document knowledge. It is **not** a claim that the entire cloud stack is deployed and running in the public demo. The vector/hybrid-search branch represents an architectural extension; the current local demo uses BM25.
@@ -90,7 +108,7 @@ The **intent router** selects a workflow. Tool execution can query structured da
 | Mode | Retrieval / data | Answer generation | Intended use |
 |---|---|---|---|
 | **Local (default)** | Synthetic SQLite data; local metadata-filtered BM25 | Deterministic, source-based formatting | Cost-free, reproducible demonstration |
-| **Local AI (optional)** | Local enterprise data and RAG | LLM-assisted generation, subject to usage controls | Demonstrate optional generative responses |
+| **Local AI (optional)** | Local enterprise data and RAG | GPT-4.1 mini via OpenAI API, with daily usage controls | Demonstrate optional generative responses |
 | **Azure / Databricks development** | Azure Data Lake and Databricks workflows | GPT-OSS-20B used during cloud experimentation | Explore enterprise data/AI integration and model trade-offs |
 
 ### GPT-OSS-20B and cost-aware design
