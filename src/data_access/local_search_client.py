@@ -62,6 +62,11 @@ class LocalSearchIndex:
             for doc in self.documents
         ]
 
+        self.term_frequencies = [
+            Counter(tokens)
+            for tokens in self.tokenized_documents
+        ]
+
         self.document_frequencies = Counter()
 
         for tokens in self.tokenized_documents:
@@ -144,7 +149,7 @@ class LocalSearchIndex:
         if not tokens:
             return 0.0
 
-        frequencies = Counter(tokens)
+        frequencies = self.term_frequencies[index]
         length = len(tokens)
         total_documents = len(self.documents)
 
