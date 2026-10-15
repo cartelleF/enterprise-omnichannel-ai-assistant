@@ -3,3 +3,29 @@ __pycache__/
 .pytest_cache/
 data/raw/
 data/sample/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Local runtime and evaluation outputs
+data/runtime/
+*.log
+
+# Local backups
+*.backup
+*.bak
+*.before_*
+*.before_v*
+*.before_generation_mode
+*.before_local_ai
+*.before_rate_limit
+
+# Frontend dependencies and build outputs
+node_modules/
+dist/
+
+# Operating system
+.DS_Store
