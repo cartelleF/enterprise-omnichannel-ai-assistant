@@ -20,8 +20,8 @@ def render_architecture():
                     rankdir=TB,
                     bgcolor="transparent",
                     pad=0.3,
-                    nodesep=0.5,
-                    ranksep=0.6
+                    nodesep=0.6,
+                    ranksep=0.7
                 ];
 
                 node [
@@ -38,32 +38,66 @@ def render_architecture():
 
                 UI [label="Streamlit UI"];
                 SERVICE [label="LocalDemoService"];
-                ROUTER [label="Intelligent Routing"];
-                RAG [label="Document RAG\\nBM25 Retrieval"];
-                SAP [label="SAP Simulation\\nSQLite in Memory"];
-                DOCS [label="Synthetic Documents"];
-                JSON [label="Synthetic SAP JSON"];
-                ANSWER [label="Answer + Route + Sources",
-                        fillcolor="#DCFCE7"];
+                ROUTER [label="Intent Router", shape=diamond];
+
+                TOOL [label="Business Tools"];
+                RAG [label="Metadata-aware RAG"];
+
+                DB [label="Synthetic SQLite Data"];
+                BM25 [label="Local BM25 Search"];
+
+                EVIDENCE [label="Business Facts / Evidence"];
+                MODE [label="Response Mode", shape=diamond];
+
+                DET [label="Deterministic Answer"];
+                LLM [label="GPT-4.1 mini / OpenAI API"];
+
+                ANSWER [
+                    label="Answer + Sources",
+                    fillcolor="#DCFCE7"
+                ];
+
+                EVAL [
+                    label="Evaluation / Observability",
+                    style="rounded,dashed",
+                    fillcolor="#F3F4F6"
+                ];
 
                 UI -> SERVICE -> ROUTER;
-                ROUTER -> RAG;
-                ROUTER -> SAP;
-                DOCS -> RAG;
-                JSON -> SAP;
-                RAG -> ANSWER;
-                SAP -> ANSWER;
 
-                {rank=same; RAG; SAP;}
+                ROUTER -> TOOL [label="Business query"];
+                ROUTER -> RAG [label="Document question"];
+
+                TOOL -> DB;
+                RAG -> BM25;
+
+                DB -> EVIDENCE;
+                BM25 -> EVIDENCE;
+
+                EVIDENCE -> MODE;
+
+                MODE -> DET [label="Local"];
+                MODE -> LLM [label="Local AI"];
+
+                DET -> ANSWER;
+                LLM -> ANSWER;
+
+                ANSWER -> EVAL [style=dashed];
+
+                {rank=same; TOOL; RAG;}
+                {rank=same; DB; BM25;}
+                {rank=same; DET; LLM;}
             }
             """,
             use_container_width=True,
         )
 
         st.info(
-            "Running implementation: synthetic datasets, "
-            "local retrieval and in-memory SQLite. "
-            "No live enterprise connection or paid LLM is required."
+            "Local mode uses synthetic datasets, BM25 retrieval and SQLite "
+            "without requiring an external LLM. Optional Local AI mode "
+            "uses GPT-4.1 mini through the OpenAI API, with a configured "
+            "daily limit of five LLM calls. No live SAP or CRM connection "
+            "is required."
         )
 
     with enterprise_tab:
@@ -103,13 +137,19 @@ def render_architecture():
                 AGENT [
                     label="Agent Orchestration\\nRouting + Tool Calling"
                 ];
+                LLM [
+                    label="GPT-OSS-20B\\nAzure Development",
+                    fillcolor="#FEF3C7"
+                ];
                 APIS [
                     label="Enterprise APIs / Applications",
                     fillcolor="#DCFCE7"
                 ];
 
                 SOURCES -> ADLS -> DATABRICKS;
-                DATABRICKS -> SEARCH -> AGENT -> APIS;
+                DATABRICKS -> SEARCH -> AGENT;
+                AGENT -> LLM [label="LLM-assisted generation"];
+                LLM -> APIS;
             }
             """,
             use_container_width=True,
