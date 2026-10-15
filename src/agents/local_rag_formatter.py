@@ -3,6 +3,10 @@
 import re
 
 from src.agents.local_fact_extractor import extract_return_facts
+from src.rag.metadata_filter import (
+    extract_product_id,
+    select_document_filters,
+)
 
 
 RETURN_CATEGORIES = (
@@ -16,6 +20,24 @@ RETURN_CATEGORIES = (
 
 def format_rag_answer(documents, question=None):
     """Present retrieved evidence without inventing facts."""
+    if question and select_document_filters(question) == {"topic": "WARRANTY"}:
+        warranty_documents = [
+            doc for doc in documents
+            if doc.get("product_id")
+            and str(doc.get("file_name", "")).lower().endswith("_warranty.txt")
+        ]
+
+        if (
+            warranty_documents
+            and len(warranty_documents) == len(documents)
+            and all(doc.get("product_id") for doc in warranty_documents)
+            and not extract_product_id(question)
+        ):
+            return (
+                "Warranty information is available for specific products. "
+                "Which product are you asking about? "
+                "Please provide the product ID."
+            )
     if question and re.search(
         r"\breturns?\b|\brefunds?\b",
         question,
