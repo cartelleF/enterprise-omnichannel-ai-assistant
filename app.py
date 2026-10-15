@@ -3,7 +3,7 @@
 import streamlit as st
 
 from src.api.demo_bootstrap import prepare_demo_data
-from src.api.local_demo_service import LocalDemoService
+from src.api.portfolio_backend import select_portfolio_service_from_env
 
 
 st.set_page_config(
@@ -21,15 +21,11 @@ def initialize_demo_data():
 
 
 def get_service():
-    if "local_demo_service" not in st.session_state:
+    if "portfolio_service" not in st.session_state:
         initialize_demo_data()
-        st.session_state.local_demo_service = LocalDemoService(
-            multilingual_retrieval=True,
-            multilingual_formatting=True,
-        )
+        st.session_state.portfolio_service = select_portfolio_service_from_env()
 
-    return st.session_state.local_demo_service
-
+    return st.session_state.portfolio_service
 
 EXAMPLES = {
     "English": [
@@ -98,6 +94,8 @@ def render_response(result):
         st.markdown(answer)
 
     # Routing and reported sources are already shown here.
+    from src.api.portfolio_generation_ui import render_generation_mode
+    render_generation_mode(result)
     render_execution_trace(result)
 
     from src.api.portfolio_performance_ui import render_performance_metrics
